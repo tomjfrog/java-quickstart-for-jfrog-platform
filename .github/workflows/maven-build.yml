@@ -46,10 +46,10 @@ jobs:
           jf mvn-config \
           --server-id-resolve=setup-jfrog-cli-server \
           --server-id-deploy=setup-jfrog-cli-server \
-          --repo-resolve-releases=${{ env.PROJECT_VIRTUAL_REPOSITORY}} \
-          --repo-resolve-snapshots=${{ env.PROJECT_VIRTUAL_REPOSITORY}} \
-          --repo-deploy-releases=${{ env.PROJECT_VIRTUAL_REPOSITORY}} \
-          --repo-deploy-snapshots=${{ env.PROJECT_VIRTUAL_REPOSITORY}}
+          --repo-resolve-releases=${{ env.JF_PROJECT_VIRTUAL_REPOSITORY}} \
+          --repo-resolve-snapshots=${{ env.JF_PROJECT_VIRTUAL_REPOSITORY}} \
+          --repo-deploy-releases=${{ env.JF_PROJECT_VIRTUAL_REPOSITORY}} \
+          --repo-deploy-snapshots=${{ env.JF_PROJECT_VIRTUAL_REPOSITORY}}
 
       - name: Build with Maven
         run: |
