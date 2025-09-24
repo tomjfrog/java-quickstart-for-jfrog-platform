@@ -53,10 +53,17 @@ jobs:
           --repo-deploy-releases=${{ env.JF_PROJECT_VIRTUAL_REPOSITORY}} \
           --repo-deploy-snapshots=${{ env.JF_PROJECT_VIRTUAL_REPOSITORY}}
 
-      - name: Build with Maven
+      - name: Build with Maven # https://docs.jfrog-applications.jfrog.io/jfrog-applications/jfrog-cli/binaries-management-with-jfrog-artifactory/package-managers-integration#running-maven-builds
         run: |
           jf mvn clean install --build-name=${{ env.JF_BUILD_NAME }} --build-number=${{ github.run_number }} -DskipTests=true
 
-      - name: Publish Build Info
+      - name: Publish Build Info # https://docs.jfrog-applications.jfrog.io/jfrog-applications/jfrog-cli/binaries-management-with-jfrog-artifactory/build-integration#publishing-build-info-updated
         run: |
-            jf rt build-publish ${{ env.JF_BUILD_NAME }} ${{ github.run_number }}
+          jf rt build-publish \
+          ${{ env.JF_BUILD_NAME }} \
+          ${{ github.run_number }} \
+          --env-exclude "*password*;*secret*;*key*;*token*;*auth*" \
+          --collect-env \
+          --collect-git-info \
+          --dot-git-path ./.git
+            
