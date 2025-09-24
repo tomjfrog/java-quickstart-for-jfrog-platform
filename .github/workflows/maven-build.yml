@@ -3,11 +3,21 @@
 
 name: Java CI with Maven
 
+permissions:
+  contents: read
+  packages: write
+  id-token: write
 on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+  workflow_dispatch:
+
+env:
+  JF_URL: https://tomjfrog.jfrog.io
+  JF ACCESS_TOKEN: ${{ secrets.JF_ACCESS_TOKEN }}
+  JF_PROJECT_VIRTUAL_REPOSITORY: petclinic-maven-virtual
+  JF_SERVER_ID: tomjfrog
+  JF_PROJECT: petclinic
+  JF_BUILD_NAME: petclinic-maven
+
 
 jobs:
   build:
@@ -19,11 +29,35 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+
       - name: Set up JDK ${{matrix.java}}
         uses: actions/setup-java@v4
         with:
           java-version: ${{matrix.java}}
           distribution: 'adopt'
           cache: maven
-      - name: Build with Maven Wrapper
-        run: ./mvnw -B verify
+
+      - name: Install JFrog CLI # https://github.com/marketplace/actions/setup-jfrog-cli
+        id: jfcli
+        uses: jfrog/setup-jfrog-cli@v4
+        with:
+          version: latest
+          server-id: ${{ env.SERVER_ID }}
+
+      - name: Configure Project Settings # https://docs.jfrog-applications.jfrog.io/jfrog-applications/jfrog-cli/binaries-management-with-jfrog-artifactory/package-managers-integration#running-maven-builds
+        run: |
+          jf mvn-config \
+          --server-id-resolve= \
+          --server-id-deploy=${{ steps.jfcli.outputs.server-id }} \
+          --repo-resolve-releases=${{ env.PROJECT_VIRTUAL_REPOSITORY}} \
+          --repo-resolve-snapshots=${{ env.PROJECT_VIRTUAL_REPOSITORY}} \
+          --repo-deploy-releases=${{ env.PROJECT_VIRTUAL_REPOSITORY}} \
+          --repo-deploy-snapshots=${{ env.PROJECT_VIRTUAL_REPOSITORY}}
+
+      - name: Build with Maven
+        run: |
+          jf mvn clean install --build-name=${{ env.JF_BUILD_NAME }} --build-number=${{ github.run_number }}
+
+      - name: Publish Build Info
+        run: |
+            jf rt build-publish ${{ env.JF_BUILD_NAME }} ${{ github.run_number }}
