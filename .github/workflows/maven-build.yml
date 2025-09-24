@@ -14,10 +14,8 @@ env:
   JF_URL: https://tomjfrog.jfrog.io
   JF ACCESS_TOKEN: ${{ secrets.JF_ACCESS_TOKEN }}
   JF_PROJECT_VIRTUAL_REPOSITORY: petclinic-maven-virtual
-  JF_SERVER_ID: tomjfrog
   JF_PROJECT: petclinic
   JF_BUILD_NAME: petclinic-maven
-
 
 jobs:
   build:
@@ -42,13 +40,12 @@ jobs:
         uses: jfrog/setup-jfrog-cli@v4
         with:
           version: latest
-          custom-server-id: ${{ env.SERVER_ID }}
 
       - name: Configure Project Settings # https://docs.jfrog-applications.jfrog.io/jfrog-applications/jfrog-cli/binaries-management-with-jfrog-artifactory/package-managers-integration#running-maven-builds
         run: |
           jf mvn-config \
-          --server-id-resolve= \
-          --server-id-deploy=${{ steps.jfcli.outputs.server-id }} \
+          --server-id-resolve=setup-jfrog-cli-server \
+          --server-id-deploy=setup-jfrog-cli-server \
           --repo-resolve-releases=${{ env.PROJECT_VIRTUAL_REPOSITORY}} \
           --repo-resolve-snapshots=${{ env.PROJECT_VIRTUAL_REPOSITORY}} \
           --repo-deploy-releases=${{ env.PROJECT_VIRTUAL_REPOSITORY}} \
